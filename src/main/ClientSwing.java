@@ -8,6 +8,7 @@ import java.awt.event.*;
 import javax.swing.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import publisher.Publisher;
 import subscriber.Subscriber;
 import topicmanager.TopicManager;
@@ -111,10 +112,25 @@ public class ClientSwing {
     
   }
 
+  public void displaySubscriptions() {
+        if (my_subscriptions!=null){
+            StringBuilder sb = new StringBuilder();
+            for (String sub:my_subscriptions.keySet()){
+                sb.append(sub).append("\n");
+            }
+            my_subscriptions_TextArea.setText(sb.toString());
+        }
+    }
+  
   class showTopicsHandler implements ActionListener {
     public void actionPerformed(ActionEvent e) {
       
-      //...
+      Set<String> topics = topicManager.topics();
+            StringBuilder sb = new StringBuilder();
+            for (String topic:topics){
+                sb.append(topic).append("\n");
+            }
+            topic_list_TextArea.setText(sb.toString());
     
     }
   }
@@ -122,7 +138,18 @@ public class ClientSwing {
   class newPublisherHandler implements ActionListener {
     public void actionPerformed(ActionEvent e) {
       
-      //...
+      if (!topicManager.isTopic(argument_TextField.getText())){
+                if (publisherTopic!=null){
+                    topicManager.removePublisherFromTopic(publisherTopic);
+                    my_subscriptions.remove(publisherTopic);
+                }
+                publisherTopic = argument_TextField.getText();
+                publisher = topicManager.addPublisherToTopic(publisherTopic);
+                publisher_TextArea.setText(publisherTopic);
+                argument_TextField.setText("");
+                
+            }
+            new showTopicsHandler().actionPerformed(e);
     
     }
   }
@@ -130,7 +157,20 @@ public class ClientSwing {
   class newSubscriberHandler implements ActionListener {
     public void actionPerformed(ActionEvent e) {
       
-      //...
+      String data = argument_TextField.getText();
+            
+            if (topicManager.isTopic(data)){
+                //if (subscriber==null){
+                //    subscriber = new SubscriberImpl(ClientSwing.this);
+                //}
+                //topicManager.subscribe(data, subscriber);
+                //Use mysubscriptions
+                //my_subscriptions.put(data, subscriber);
+                displaySubscriptions();
+                argument_TextField.setText("");            
+            }
+            
+            new showTopicsHandler().actionPerformed(e);
     
     }
   }
@@ -138,7 +178,20 @@ public class ClientSwing {
   class UnsubscribeHandler implements ActionListener {
     public void actionPerformed(ActionEvent e) {
       
-      //...
+      String data = argument_TextField.getText();
+            
+            if (topicManager.isTopic(data)){
+                //if (subscriber==null){
+                //    subscriber = new SubscriberImpl(ClientSwing.this);
+                //}          
+                //topicManager.unsubscribe(data, subscriber);
+                //Use mysubscriptions
+                my_subscriptions.remove(data);
+                displaySubscriptions();
+                argument_TextField.setText("");
+            }
+            
+            new showTopicsHandler().actionPerformed(e);
     
     }
   }
@@ -146,7 +199,13 @@ public class ClientSwing {
   class postEventHandler implements ActionListener {
     public void actionPerformed(ActionEvent e) {
       
-      //...
+      if (publisher!=null){
+                String event = argument_TextField.getText();
+                publisher.publish(publisherTopic, event);
+                argument_TextField.setText("");
+            }
+            
+            new showTopicsHandler().actionPerformed(e);
     
     }
   }
@@ -156,6 +215,7 @@ public class ClientSwing {
       messages_TextArea.append("Client ending... \n");
       ((TopicManagerStub) topicManager).close();
       System.out.println("app closed");
+      WebSocketClient.close();
       System.exit(0);
     }
   }
@@ -170,6 +230,7 @@ public class ClientSwing {
     public void windowClosing(WindowEvent e) {
       messages_TextArea.append("Client ending... \n");
       ((TopicManagerStub) topicManager).close();
+      WebSocketClient.close();
       System.out.println("app closed");
       System.exit(0);
     }
