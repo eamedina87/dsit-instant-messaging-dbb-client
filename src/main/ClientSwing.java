@@ -13,7 +13,7 @@ import publisher.Publisher;
 import subscriber.Subscriber;
 import topicmanager.TopicManager;
 import topicmanager.TopicManagerStub;
-import webSocketService.WebSocketClient;
+import webSocketService.WebSocketClientFinal;
 
 public class ClientSwing {
 
@@ -21,6 +21,7 @@ public class ClientSwing {
   Publisher publisher;
   String publisherTopic;
   TopicManager topicManager;
+  private Subscriber subscriber;
 
   JFrame frame;
   JTextArea topic_list_TextArea;
@@ -109,6 +110,8 @@ public class ClientSwing {
     
       //this is where you restore the user profile
       //...
+      
+      
     
   }
 
@@ -155,17 +158,20 @@ public class ClientSwing {
   }
 
   class newSubscriberHandler implements ActionListener {
+
+        
     public void actionPerformed(ActionEvent e) {
       
       String data = argument_TextField.getText();
             
             if (topicManager.isTopic(data)){
-                //if (subscriber==null){
-                //    subscriber = new SubscriberImpl(ClientSwing.this);
-                //}
-                //topicManager.subscribe(data, subscriber);
+                if (subscriber==null){
+                    subscriber = new SubscriberImpl(ClientSwing.this);
+                }
+                topicManager.subscribe(data, subscriber);
+                WebSocketClientFinal.addSubscriber(argument_TextField.getText(), subscriber);
                 //Use mysubscriptions
-                //my_subscriptions.put(data, subscriber);
+                my_subscriptions.put(data, subscriber);
                 displaySubscriptions();
                 argument_TextField.setText("");            
             }
@@ -181,10 +187,10 @@ public class ClientSwing {
       String data = argument_TextField.getText();
             
             if (topicManager.isTopic(data)){
-                //if (subscriber==null){
-                //    subscriber = new SubscriberImpl(ClientSwing.this);
-                //}          
-                //topicManager.unsubscribe(data, subscriber);
+                if (subscriber==null){
+                    subscriber = new SubscriberImpl(ClientSwing.this);
+                }          
+                topicManager.unsubscribe(data, subscriber);
                 //Use mysubscriptions
                 my_subscriptions.remove(data);
                 displaySubscriptions();
@@ -215,7 +221,7 @@ public class ClientSwing {
       messages_TextArea.append("Client ending... \n");
       ((TopicManagerStub) topicManager).close();
       System.out.println("app closed");
-      WebSocketClient.close();
+      WebSocketClientFinal.close();
       System.exit(0);
     }
   }
@@ -230,7 +236,7 @@ public class ClientSwing {
     public void windowClosing(WindowEvent e) {
       messages_TextArea.append("Client ending... \n");
       ((TopicManagerStub) topicManager).close();
-      WebSocketClient.close();
+      WebSocketClientFinal.close();
       System.out.println("app closed");
       System.exit(0);
     }

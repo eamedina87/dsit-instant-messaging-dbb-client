@@ -11,7 +11,15 @@ package apiREST;
  */
 public interface Cons {
   
-  String SERVER_REST = "http://localhost:8080/InstantMessagingRemote_server_with_ddbb/webresources";
-  String SERVER_WEBSOCKET = "ws://localhost:8080/InstantMessagingRemote_server_with_ddbb/ws";
+  String localhost = "localhost";
+  //String outer = "192.168.0.34";
+  String address = localhost;  
+  
+  String projectNamePrevious = "InstantMessagingRemote_server_with_ddbb";
+  String projectNameNew = "dsit-instant-messaging-dbb-server";
+  String projectName = projectNameNew;
+  
+  String SERVER_REST = "http://"+address+":8080/"+projectName+"/webresources";
+  String SERVER_WEBSOCKET = "ws://"+address+":8080/"+projectName+"/ws";
   
 }

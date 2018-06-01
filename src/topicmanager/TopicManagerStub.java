@@ -12,26 +12,31 @@ import java.util.Set;
 import publisher.Publisher;
 import publisher.PublisherStub;
 import subscriber.Subscriber;
-import webSocketService.WebSocketClient;
+import webSocketService.WebSocketClientFinal;
 
 public class TopicManagerStub implements TopicManager {
 
   public entity.User user;
 
   public TopicManagerStub(entity.User user) {
-    WebSocketClient.newInstance();
+    //WebSocketClient.newInstance();
+    WebSocketClientFinal.getInstance();
     this.user = user;
   }
 
   public void close() {
-    WebSocketClient.close();
+    WebSocketClientFinal.close();
   }
 
   public Publisher addPublisherToTopic(String topic) {
     Topic mTopic = new Topic();
     mTopic.setName(topic);
-    Publisher publisher = new PublisherStub(mTopic);
-    return (Publisher) apiREST_Publisher.create_and_return_Publisher((entity.Publisher) publisher);
+    entity.Publisher publisher = new entity.Publisher();
+    publisher.setTopic(mTopic);
+    publisher.setUser(user);
+    publisher = apiREST_Publisher.create_and_return_Publisher(publisher);
+    
+    return new PublisherStub(mTopic);
   }
 
   public int removePublisherFromTopic(String topic) {
@@ -45,7 +50,7 @@ public class TopicManagerStub implements TopicManager {
   }
 
   public boolean isTopic(String topic_name) {
-    return apiREST_Topic.retrieveTopicByName(topic_name)!=null;
+    return apiREST_Topic.retrieveTopicByName(topic_name).getName()!=null;
   }
 
   public Set<String> topics() {
@@ -59,19 +64,26 @@ public class TopicManagerStub implements TopicManager {
 
   public boolean subscribe(String topic, Subscriber subscriber) {
       //TODO check
-      entity.Subscriber tempSubscriber 
-              = apiREST_Subscriber.create_and_return_Subscriber((entity.Subscriber) subscriber);
-    return tempSubscriber!=null;
+    entity.Subscriber mSubscriber = new entity.Subscriber();
+    mSubscriber.setTopic(apiREST_Topic.retrieveTopicByName(topic));
+    mSubscriber.setUser(user);
+    mSubscriber = apiREST_Subscriber.create_and_return_Subscriber(mSubscriber);
+    return mSubscriber!=null;
   }
 
   public boolean unsubscribe(String topic, Subscriber subscriber) {
       //TODO check
-    apiREST_Subscriber.deleteSubscriber((entity.Subscriber) subscriber);
+      entity.Subscriber mSubs = new entity.Subscriber();
+      mSubs.setTopic(apiREST_Topic.retrieveTopicByName(topic));
+      mSubs.setUser(user);
+    apiREST_Subscriber.deleteSubscriber(mSubs);
     return true;
   }
   
   public Publisher publisherOf() {
-    return (Publisher)apiREST_Publisher.PublisherOf(user);
+    entity.Publisher publisher = apiREST_Publisher.PublisherOf(user);
+    Publisher mPub = new PublisherStub(publisher.getTopic());
+    return mPub;
   }
 
   public List<entity.Subscriber> mySubscriptions() {

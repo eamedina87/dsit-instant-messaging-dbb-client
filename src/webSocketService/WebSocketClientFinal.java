@@ -1,6 +1,7 @@
 package webSocketService;
 
 import apiREST.Cons;
+import apiREST.apiREST_Topic;
 import com.google.gson.Gson;
 import entity.Message;
 import java.net.URI;
@@ -55,14 +56,23 @@ public class WebSocketClientFinal implements MessageHandler{
       //TODO CHECK
     if (subscriber!=null){
         subscriberMap.put(topic_name, subscriber);
+        MySubscription message = new MySubscription();
+        message.topic = topic_name;
+        message.type = true;
+        Gson gson = new Gson();
+        sendMessage(gson.toJson(message));
     }
     
   }
 
   public static synchronized void removeSubscriber(String topic_name) {
     if(subscriberMap!=null && subscriberMap.containsKey(topic_name)){
-            subscriberMap.remove(topic_name);
-            
+        subscriberMap.remove(topic_name);
+        MySubscription message = new MySubscription();
+        message.topic = topic_name;
+        message.type = false;
+        Gson gson = new Gson();
+        sendMessage(gson.toJson(message));
     }
   }
 
